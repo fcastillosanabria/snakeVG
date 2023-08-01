@@ -88,6 +88,9 @@ def game_loop():
     
     # Puntaje inicial del jugador
     score = 0
+    
+    # Variable para controlar si el juego está en pausa
+    paused = False
 
     # Tamaño de la fuente para el texto "Game Over"
     font_size_game_over = 100
@@ -114,11 +117,57 @@ def game_loop():
 
     # Fuente para el puntaje
     font = pygame.font.SysFont(None, 30)
+    
+    # Cargar imágenes de los botones
+    mute_img = pygame.image.load("mute.png")
+
+    # Escala las imágenes para ajustar su tamaño si es necesario
+    mute_img = pygame.transform.scale(mute_img, (400, 150))
 
     while not game_exit:
+        # Codigo para cerrar el juego y abrir el menu presionando el boton "X" de la ventana, estando en pleno juego
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_exit = True
+
+            # Lógica para pausar y reanudar el juego
+            if not game_over:
+                # Si no estamos en la pantalla de Game Over, podemos pausar y reanudar el juego
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                    paused = not paused
+
+                # Lógica para el movimiento del gusano
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT and last_key != pygame.K_RIGHT:
+                        last_key = pygame.K_LEFT
+                        change_x = -segment_speed
+                        change_y = 0
+                    elif event.key == pygame.K_RIGHT and last_key != pygame.K_LEFT:
+                        last_key = pygame.K_RIGHT
+                        change_x = segment_speed
+                        change_y = 0
+                    elif event.key == pygame.K_UP and last_key != pygame.K_DOWN:
+                        last_key = pygame.K_UP
+                        change_x = 0
+                        change_y = -segment_speed
+                    elif event.key == pygame.K_DOWN and last_key != pygame.K_UP:
+                        last_key = pygame.K_DOWN
+                        change_x = 0
+                        change_y = segment_speed
+
+        # Si está en pausa, mostrar el texto "PAUSA" en el centro de la pantalla
+        if paused:
+            pause_text = font_game_over.render("PAUSA", True, white)
+            window.blit(pause_text, (window_width / 2 - pause_text.get_width() / 2, window_height / 2 - pause_text.get_height() / 2))
+            
+            
+            
+            pygame.display.update()
+            continue
+              
         while game_over:
             # Pantalla de game over
-            window.fill(black)
+            window.fill(green)
             
             # Renderizar el texto "Game Over" en una superficie transparente
             text_game_over_surface = font_game_over.render("Game Over", True, red)
@@ -168,15 +217,19 @@ def game_loop():
                 game_over_sound.play()
                 game_over_sound_played = True
 
+            # Codigo para cerrar el juego y abrir el menu presionando el boton "X" de la ventana cuando estamos en Game Over
             for event in pygame.event.get():
+                # Si presionamos el boton "X" de la ventana, abrira inicio.py
                 if event.type == pygame.QUIT:
-                    game_over = False
-                    game_exit = True
-                elif event.type == pygame.KEYDOWN:
+                    pygame.quit()
+                    subprocess.Popen(["python", "inicio.py"])
+                    quit()
+                elif event.type == pygame.KEYDOWN:  # Si presionamos la tecla "q", abrira inicio.py
                     if event.key == pygame.K_q:
-                        game_over = False
-                        game_exit = True
-                    elif event.key == pygame.K_r:
+                        pygame.quit()
+                        subprocess.Popen(["python", "inicio.py"])
+                        quit()
+                    elif event.key == pygame.K_r:  # Si presionamos la tecla "r", reiniciara el juego
                         # Detener el sonido de "Game Over"
                         pygame.mixer.Sound.stop(game_over_sound)
                         # Se reiniciara el juego
@@ -191,26 +244,7 @@ def game_loop():
                 fade_alpha = 255
                 fade_dir = -1
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_exit = True
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and last_key != pygame.K_RIGHT:
-                    last_key = pygame.K_LEFT
-                    change_x = -segment_speed
-                    change_y = 0
-                elif event.key == pygame.K_RIGHT and last_key != pygame.K_LEFT:
-                    last_key = pygame.K_RIGHT
-                    change_x = segment_speed
-                    change_y = 0
-                elif event.key == pygame.K_UP and last_key != pygame.K_DOWN:
-                    last_key = pygame.K_UP
-                    change_x = 0
-                    change_y = -segment_speed
-                elif event.key == pygame.K_DOWN and last_key != pygame.K_UP:
-                    last_key = pygame.K_DOWN
-                    change_x = 0
-                    change_y = segment_speed
+        
 
         # Actualizar la posición de la cabeza del gusano
         head_x += change_x
@@ -227,11 +261,11 @@ def game_loop():
             print("Me he chocado con el borde")
 
         # Actualizar la ventana
-        window.fill(black)
+        window.fill(green)
 
         # Dibujar el gusano
         for segment in segments:
-            pygame.draw.rect(window, green, (segment[0], segment[1], segment_size, segment_size))
+            pygame.draw.rect(window, black, (segment[0], segment[1], segment_size, segment_size))
 
         # Dibujar el punto (manzana)
         pygame.draw.rect(window, red, (apple_x, apple_y, segment_size, segment_size))
@@ -273,7 +307,6 @@ def game_loop():
             # Si no se alcanzó el punto, eliminar el último segmento del gusano
             segments.pop(0)
 
-        
 
         # Dibujar el puntaje en la esquina superior derecha
         score_text = font.render(f"Puntaje: {score}", True, white)

@@ -34,17 +34,15 @@ if datetime.now() > fecha_vencimiento:
                 os._exit(0)
 else:
     # Función para abrir el juego en una nueva ventana
-    def open_game():
-        pygame.mixer.music.stop()
-        os.system("python juego.py")
-        pygame.quit()
+    def open_game(): # Declaramos la funcnion para abrir el juego en modo clsico
+        pygame.quit()  # Cierra la ventana actual
+        os.system("python juego.py")  # Abre el juego en una nueva ventana
         os._exit(0)
     
     # Función para abrir el juego de dos jugadores en una nueva ventana
     def open_game2Player():
-        pygame.mixer.music.stop()
-        os.system("python juego2Player.py")
-        pygame.quit()
+        pygame.quit()  # Cierra la ventana actual
+        os.system("python juego2Player.py")  # Abre el juego en una nueva ventana
         os._exit(0)
 
     # Función para salir del programa
@@ -63,6 +61,15 @@ else:
     window = pygame.display.set_mode((window_width, window_height))
     pygame.display.set_caption("Snake Game VG 2023")
 
+    # Cargar la música de fondo
+    pygame.mixer.music.load("Can_I_Call_You_Tonight.mp3")
+
+    # Configurar el volumen inicial de la música
+    pygame.mixer.music.set_volume(0.1)  # Ajusta el volumen entre 0.0 y 1.0 según tus preferencias
+
+    # Reproducir la música de fondo en bucle infinito
+    pygame.mixer.music.play(loops=-1)
+
     # Cargar la imagen
     image_path = "logoSnake.png"
     image = pygame.image.load(image_path).convert_alpha()
@@ -76,7 +83,7 @@ else:
                 os._exit(0)
 
         # Rellenar la ventana con un color de fondo transparente
-        window.fill((0, 255, 0, 0))
+        window.fill((0, 0, 0, 0))
 
         # Mostrar la imagen en la ventana
         image_rect = image.get_rect(center=(window_width // 2, window_height // 2 - 150))
